@@ -90,25 +90,92 @@ class Trigger(object):
 # PHRASE TRIGGERS
 
 # Problem 2
-# TODO: PhraseTrigger
-
+# PhraseTrigger
+class PhraseTrigger(Trigger):
+    def __init__(self, phrase):
+        self.phrase = phrase
+    def is_phrase_in(self, text):
+        lst = []
+        phrase = self.phrase.lower()
+        text = text.lower()
+        range_idx = range(len(text))
+        for i in range(len(phrase)):
+            if phrase[i] == ' ':
+                for l in range_idx:
+                    if text[l] == phrase[i] or text[l] in string.punctuation:
+                        if text[l+1] == ' ' or text[l+1] in string.punctuation or text[l+1] == phrase[i+1]:
+                            lst.append(phrase[i])
+                            range_idx = range(l+1, len(text))
+                            break
+                        else:
+                            return False
+                continue
+            for l in range_idx:
+                if text[l] == phrase[i]:
+                    lst.append(phrase[i])
+                    range_idx = range(l+1, len(text))
+                    break
+        lst = ''.join(lst)
+        try:
+            if text[range_idx[0]] == ' ' or text[range_idx[0]] in string.punctuation:
+                return lst == phrase
+        except:
+            return lst == phrase
+        return False
 # Problem 3
-# TODO: TitleTrigger
-
+# TitleTrigger
+class TitleTrigger(PhraseTrigger):
+    def __init__(self, phrase):
+        PhraseTrigger.__init__(self, phrase)
+        self.phrase = phrase
+    def evaluate(self, title):
+        title = title.get_title()
+        return self.is_phrase_in(title)
 # Problem 4
-# TODO: DescriptionTrigger
+# DescriptionTrigger
+class DescriptionTrigger(PhraseTrigger):
+    def __init__(self, phrase):
+        PhraseTrigger.__init__(self, phrase)
+        self.phrase = phrase
+    def evaluate(self, desc):
+        desc = desc.get_description()
+        return self.is_phrase_in(desc)
 
 # TIME TRIGGERS
 
 # Problem 5
-# TODO: TimeTrigger
+# TimeTrigger
 # Constructor:
 #        Input: Time has to be in EST and in the format of "%d %b %Y %H:%M:%S".
 #        Convert time from string to a datetime before saving it as an attribute.
-
+class TimeTrigger(Trigger):
+    def __init__(self, time_current):
+        self.time_current = time_current
 # Problem 6
-# TODO: BeforeTrigger and AfterTrigger
+# BeforeTrigger and AfterTrigger
+class BeforeTrigger(TimeTrigger):
+    def __init__(self, time_current):
+        TimeTrigger.__init__(self, time_current)
+        time_current = datetime.strptime(time_current, '%d %b %Y %H:%M:%S')
+        time_current = time_current.replace(tzinfo=pytz.timezone('EST'))
+        self.time_current = time_current
+    def evaluate(self, before_trigger):
+        before_trigger = before_trigger.get_pubdate()
+        if not before_trigger.tzinfo:
+            self.time_current = self.time_current.replace(tzinfo=None)
+        return before_trigger < self.time_current
 
+class AfterTrigger(TimeTrigger):
+    def __init__(self, time_current):
+        TimeTrigger.__init__(self, time_current)
+        time_current = datetime.strptime(time_current, '%d %b %Y %H:%M:%S')
+        time_current = time_current.replace(tzinfo=pytz.timezone('EST'))
+        self.time_current = time_current
+    def evaluate(self, after_trigger):
+        after_trigger = after_trigger.get_pubdate()
+        if not after_trigger.tzinfo:
+            self.time_current = self.time_current.replace(tzinfo=None)
+        return after_trigger > self.time_current
 
 # COMPOSITE TRIGGERS
 
