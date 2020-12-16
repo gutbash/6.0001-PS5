@@ -180,15 +180,30 @@ class AfterTrigger(TimeTrigger):
 # COMPOSITE TRIGGERS
 
 # Problem 7
-# TODO: NotTrigger
-
+# NotTrigger
+class NotTrigger(Trigger):
+    def __init__(self, trigger):
+        self.trigger = trigger
+    def evaluate(self, item):
+        return not self.trigger.evaluate(item)
 # Problem 8
-# TODO: AndTrigger
-
+# AndTrigger
+class AndTrigger(Trigger):
+    def __init__(self, trigger1, trigger2):
+        self.trigger1 = trigger1
+        self.trigger2 = trigger2
+    def evaluate(self, item):
+        if self.trigger1.evaluate(item) and self.trigger2.evaluate(item):
+            return True
 # Problem 9
-# TODO: OrTrigger
-
-
+# OrTrigger
+class OrTrigger(Trigger):
+    def __init__(self, trigger1, trigger2):
+        self.trigger1 = trigger1
+        self.trigger2 = trigger2
+    def evaluate(self, item):
+        if self.trigger1.evaluate(item) or self.trigger2.evaluate(item):
+            return True
 #======================
 # Filtering
 #======================
@@ -200,9 +215,13 @@ def filter_stories(stories, triggerlist):
 
     Returns: a list of only the stories for which a trigger in triggerlist fires.
     """
-    # TODO: Problem 10
-    # This is a placeholder
-    # (we're just returning all the stories, with no filtering)
+    # Problem 10
+    new_stories = []
+    for trigger in triggerlist:
+        for story in stories:
+            if trigger.evaluate(story):
+                new_stories.append(story)
+    stories = new_stories
     return stories
 
 
@@ -227,7 +246,12 @@ def read_trigger_config(filename):
         if not (len(line) == 0 or line.startswith('//')):
             lines.append(line)
 
-    # TODO: Problem 11
+    # Problem 11
+    trigger_lst = []
+    trigger_dict = {'DESCRIPTION': DescriptionTrigger, 'TITLE': TitleTrigger, 'AND': AndTrigger}
+    for line in lines:
+        line.split(',')
+        
     # line is the list of lines that you need to parse and for which you need
     # to build triggers
 
@@ -248,7 +272,7 @@ def main_thread(master):
         triggerlist = [t1, t4]
 
         # Problem 11
-        # TODO: After implementing read_trigger_config, uncomment this line 
+        # After implementing read_trigger_config, uncomment this line 
         # triggerlist = read_trigger_config('triggers.txt')
         
         # HELPER CODE - you don't need to understand this!
